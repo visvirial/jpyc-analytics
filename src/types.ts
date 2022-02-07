@@ -12,8 +12,13 @@ export interface ChainConfigs {
 	[chain: string]: ChainConfig;
 }
 
+export interface ServerConfig {
+	port: number;
+}
+
 export interface Config {
 	syncInterval: number;
 	chains: ChainConfigs;
+	server: ServerConfig;
 }
 
