@@ -12,7 +12,6 @@ export interface ChainConfigs {
 }
 
 export interface Config {
-	db: any;
 	chains: ChainConfigs;
 }
 

@@ -1,0 +1,24 @@
+// vim: set expandtab:
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id        Int     @id @default(autoincrement())
+  chain     String  @db.VarChar(8)
+  height    Int
+  timestamp Int
+  txhash    String  @db.VarChar(64)
+  from      String  @db.VarChar(64)
+  to        String  @db.VarChar(64)
+  value     Decimal @db.Decimal(32, 18)
+}
+

@@ -1,16 +1,12 @@
 
-import mariadb from 'mariadb';
+import { PrismaClient } from '@prisma/client';
 import { ethers } from 'ethers';
 
 import { config } from './config';
 
-// Create MariaDB connection.
-export const initDB = async () => {
-	return await mariadb.createConnection(config.db);
-};
+const prisma = new PrismaClient();
 
 export const sync = async () => {
-	const conn = await initDB();
 	for(const chain in config.chains) {
 		const chainConfig = config.chains[chain];
 		// Create Geth connection.
@@ -18,7 +14,14 @@ export const sync = async () => {
 		const targetHeight = await chainConfig.provider.getBlockNumber();
 		// Get the last block height.
 		let syncedHeight =
-			((await conn.query('SELECT MAX(height) AS syncedHeight from transactions WHERE chain = ?', [chain]))[0].syncedHeight) ||
+			(await prisma.transaction.aggregate({
+				_max: {
+					height: true,
+				},
+				where: {
+					chain,
+				},
+			}))._max.height ||
 				(chainConfig.genesisHeight - 1);
 		console.log(`Syncing from ${syncedHeight.toLocaleString()} to ${targetHeight.toLocaleString()}...`);
 		// Iterate over blocks.
@@ -51,16 +54,24 @@ export const sync = async () => {
 			if(txs.length <= 0) {
 				continue;
 			}
-			await conn.batch(
-				'INSERT INTO transactions VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)',
-				txs.map((tx) => {
+			await prisma.transaction.createMany({
+				data: txs.map((tx) => {
 					const valueStr = tx.value.toString().padStart(19, '0');
 					const valueStrDecimal = valueStr.slice(0, -18) + '.' + valueStr.slice(-18);
-					return [chain, tx.height, tx.timestamp, tx.txhash, tx.from, tx.to, valueStrDecimal];
-				})
-			);
+					return {
+						chain,
+						height: tx.height,
+						timestamp: tx.timestamp,
+						txhash: tx.txhash,
+						from: tx.from,
+						to: tx.to,
+						value: valueStrDecimal,
+					};
+				}),
+			});
 		}
 	}
+	await prisma.$disconnect();
 };
 
 sync();
