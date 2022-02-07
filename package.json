@@ -1,0 +1,16 @@
+{
+  "name": "jpyc-analytics",
+  "version": "0.0.1",
+  "description": "Analyze JPYC (A Stable Coin Pegged to Japanese Yen) on Blockchains",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node ./index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vis Virial <visvirial@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^5.5.4",
+    "mariadb": "^2.5.5"
+  }
+}
