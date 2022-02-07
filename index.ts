@@ -25,11 +25,10 @@ export const sync = async () => {
 				(chainConfig.genesisHeight - 1);
 		console.log(`Syncing from ${syncedHeight.toLocaleString()} to ${targetHeight.toLocaleString()}...`);
 		// Iterate over blocks.
-		const BATCH_BLOCKS = 1000;
-		for(; syncedHeight<targetHeight; syncedHeight+=BATCH_BLOCKS) {
+		for(; syncedHeight<targetHeight; syncedHeight+=chainConfig.batchBlocks) {
 			// Fetch "Transfer" events.
 			const fromHeight = syncedHeight + 1;
-			const toHeight = syncedHeight + BATCH_BLOCKS;
+			const toHeight = syncedHeight + chainConfig.batchBlocks;
 			console.log(`Fetching Transfer evenets at block number between ${fromHeight.toLocaleString()} and ${toHeight.toLocaleString()}...`);
 			const events = await contract.queryFilter(contract.filters.Transfer(), fromHeight, toHeight);
 			const txs = [];
