@@ -13,6 +13,7 @@ export interface ChainConfigs {
 }
 
 export interface Config {
+	syncInterval: number;
 	chains: ChainConfigs;
 }
 

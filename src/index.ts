@@ -75,5 +75,14 @@ export const syncOnce = async () => {
 	}));
 };
 
-syncOnce();
+export const syncWithInterval = async (interval: number) => {
+	await syncOnce();
+	setTimeout(() => { syncWithInterval(interval); }, interval);
+}
+
+export const main = async () => {
+	await syncWithInterval(config.syncInterval);
+};
+
+main();
 
