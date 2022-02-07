@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import express from 'express';
 
 import { config } from './config';
@@ -17,8 +17,9 @@ export const main = async () => {
 		res.header("Access-Control-Allow-Headers", "*");
 		next();
 	});
+	// /txs
 	app.get('/txs', async (req: express.Request, res: express.Response) => {
-		const PER_PAGE = 10;
+		const PER_PAGE = 100;
 		const offset = Number.parseInt((req.query.offset as string) || '0');
 		const chainsRaw = ((req.query.chains as string) || 'all');
 		const chains = (chainsRaw === 'all' ? Object.keys(config.chains) : chainsRaw.split(','));
@@ -64,6 +65,67 @@ export const main = async () => {
 			txs,
 		});
 	});
+	// /holders
+	app.get('/holders', async (req: express.Request, res: express.Response) => {
+		const PER_PAGE = 100;
+		const offset = Number.parseInt((req.query.offset as string) || '0');
+		const chainsRaw = ((req.query.chains as string) || 'all');
+		const chains = (chainsRaw === 'all' ? Object.keys(config.chains) : chainsRaw.split(','));
+		const before = Number.parseInt((req.query.before as string) || Number.MAX_SAFE_INTEGER.toString());
+		const where = {
+			chain: {
+				in: chains
+			},
+			timestamp: {
+				lte: before,
+			},
+		};
+		// Compute incoming values.
+		const ins = await prisma.transaction.groupBy({
+			by: ['chain', 'to'],
+			_sum: {
+				value: true,
+			},
+			where,
+		});
+		// Compute outgoing values.
+		const outs = await prisma.transaction.groupBy({
+			by: ['chain', 'from'],
+			_sum: {
+				value: true,
+			},
+			where,
+		});
+		// Concatinate `ins` and `outs`.
+		const holdersObj: { [address: string]: Prisma.Decimal } = {};
+		ins.forEach((input) => {
+			const key = `${input.chain}_${input.to}`;
+			holdersObj[key] = (holdersObj[key] || new Prisma.Decimal(0)).add(input._sum.value || new Prisma.Decimal(0));
+		});
+		outs.forEach((output) => {
+			const key = `${output.chain}_${output.from}`;
+			holdersObj[key] = (holdersObj[key] || new Prisma.Decimal(0)).sub(output._sum.value || new Prisma.Decimal(0));
+		});
+		let holders = [];
+		for(const chainAndAddress in holdersObj) {
+			const value = holdersObj[chainAndAddress];
+			const [chain, address] = chainAndAddress.split('_');
+			holders.push({
+				chain,
+				address,
+				value,
+			});
+		}
+		// Discard zero balances.
+		holders = holders.filter((holder) => holder.value.isPositive() && !holder.value.isZero());
+		// Sort.
+		holders.sort((a, b) => b.value.cmp(a.value));
+		res.send({
+			count: holders.length,
+			holders: holders.slice(offset, offset + PER_PAGE),
+		});
+	});
+	// Listen on localhost.
 	app.listen(config.server.port, () => {
 		console.log(`JPYC Analytics backend is listening at localhost:${config.server.port}`);
 	});
