@@ -31,8 +31,10 @@ export const sync = async () => {
 			const toHeight = syncedHeight + chainConfig.batchBlocks;
 			console.log(`Fetching Transfer evenets at block number between ${fromHeight.toLocaleString()} and ${toHeight.toLocaleString()}...`);
 			const events = await contract.queryFilter(contract.filters.Transfer(), fromHeight, toHeight);
-			const txs = [];
-			for(const ev of events) {
+			if(events.length <= 0) {
+				continue;
+			}
+			const txs = await Promise.all(events.map(async (ev) => {
 				const height    = ev.blockNumber;
 				const timestamp = (await ev.getBlock()).timestamp;
 				const txhash    = ev.transactionHash.slice(2);
@@ -40,19 +42,16 @@ export const sync = async () => {
 				const to        = ev.args!.to;
 				const value     = ev.args!.value;
 				console.log(`#${height.toLocaleString()}: ${from} => ${to}: ${Math.round(value * 1e-18).toLocaleString().padStart(11, ' ')}JPYC`);
-				txs.push({
+				return {
 					height,
 					timestamp,
 					txhash,
 					from,
 					to,
 					value,
-				});
-			}
+				};
+			}));
 			// Insert into the DB.
-			if(txs.length <= 0) {
-				continue;
-			}
 			await prisma.transaction.createMany({
 				data: txs.map((tx) => {
 					const valueStr = tx.value.toString().padStart(19, '0');
