@@ -74,7 +74,11 @@ export const syncOnce = async (prisma: PrismaClient) => {
 };
 
 export const syncWithInterval = async (prisma: PrismaClient, interval: number) => {
-	await syncOnce(prisma);
+	try {
+		await syncOnce(prisma);
+	} catch(e) {
+		console.log(e);
+	}
 	setTimeout(() => { syncWithInterval(prisma, interval); }, interval);
 }
 
