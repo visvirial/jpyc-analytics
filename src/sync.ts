@@ -26,7 +26,7 @@ export const syncOnceByChain = async (prisma: PrismaClient, chain: string) => {
 	for(; syncedHeight<targetHeight; syncedHeight+=chainConfig.batchBlocks) {
 		// Fetch "Transfer" events.
 		const fromHeight = syncedHeight + 1;
-		const toHeight = syncedHeight + chainConfig.batchBlocks;
+		const toHeight = Math.min(syncedHeight + chainConfig.batchBlocks, targetHeight);
 		console.log(`${chain}: Fetching Transfer evenets at block number between ${fromHeight.toLocaleString()} and ${toHeight.toLocaleString()}...`);
 		const events = await contract.queryFilter(contract.filters.Transfer(), fromHeight, toHeight);
 		if(events.length <= 0) {
@@ -75,7 +75,10 @@ export const syncOnce = async (prisma: PrismaClient) => {
 
 export const syncWithInterval = async (prisma: PrismaClient, interval: number) => {
 	try {
+		const begin = Date.now();
 		await syncOnce(prisma);
+		const end = Date.now();
+		console.log(`Synced in ${(end-begin).toLocaleString()}ms.`);
 	} catch(e) {
 		console.log(e);
 	}
