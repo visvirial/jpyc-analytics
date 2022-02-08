@@ -139,6 +139,48 @@ export const main = async () => {
 		supply.all = Object.values(supply).reduce((acc, s) => acc.add(s), new Prisma.Decimal(0));
 		res.send(supply);
 	});
+	app.get('/addr/:chain/:addr', async (req: express.Request, res: express.Response) => {
+		const chain = req.params.chain;
+		const addr = req.params.addr;
+		const txs = await prisma.transaction.findMany({
+			select: {
+				chain: true,
+				height: true,
+				timestamp: true,
+				txhash: true,
+				from: true,
+				to: true,
+				value: true,
+			},
+			orderBy: {
+				timestamp: 'desc',
+			},
+			where: {
+				chain,
+				OR: [
+					{
+						from: addr,
+					},
+					{
+						to: addr,
+					},
+				],
+			},
+		});
+		const balance = txs.reduce((acc, tx) => {
+			if(tx.from === addr) {
+				return acc.sub(new Prisma.Decimal(tx.value));
+			}
+			if(tx.to === addr) {
+				return acc.add(new Prisma.Decimal(tx.value));
+			}
+			throw new Error('E: neither tx.from nor tx.to does not contain the target address.');
+		}, new Prisma.Decimal(0));
+		res.send({
+			balance,
+			txs,
+		});
+	});
 	// Listen on localhost.
 	app.listen(config.server.port, () => {
 		console.log(`JPYC Analytics backend is listening at localhost:${config.server.port}`);
