@@ -2,6 +2,7 @@
 import { PrismaClient } from '@prisma/client';
 import { ethers } from 'ethers';
 
+import { valueToDecimalStr } from './util';
 import { config } from './config';
 
 export const syncOnceByChain = async (prisma: PrismaClient, chain: string) => {
@@ -51,8 +52,7 @@ export const syncOnceByChain = async (prisma: PrismaClient, chain: string) => {
 		// Insert into the DB.
 		await prisma.transaction.createMany({
 			data: txs.map((tx) => {
-				const valueStr = tx.value.toString().padStart(19, '0');
-				const valueStrDecimal = valueStr.slice(0, -18) + '.' + valueStr.slice(-18);
+				const valueStrDecimal = valueToDecimalStr(tx.value.toString());
 				return {
 					chain,
 					height: tx.height,

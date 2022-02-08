@@ -1,7 +1,9 @@
 
+import { ethers } from 'ethers';
 import { PrismaClient, Prisma } from '@prisma/client';
 import express from 'express';
 
+import { valueToDecimalStr } from './util';
 import { config } from './config';
 
 export const main = async () => {
@@ -124,6 +126,18 @@ export const main = async () => {
 			count: holders.length,
 			holders: holders.slice(offset, offset + PER_PAGE),
 		});
+	});
+	app.get('/supply', async (req: express.Request, res: express.Response) => {
+		const supply: { [chain: string]: Prisma.Decimal } = {};
+		for(const chain in config.chains) {
+			const chainConfig = config.chains[chain];
+			// Create Geth connection.
+			const contract = new ethers.Contract(chainConfig.contractAddress, require('./abi_erc20.json'), chainConfig.provider);
+			const totalSupply = new Prisma.Decimal(valueToDecimalStr((await contract.totalSupply()).toString()));
+			supply[chain] = totalSupply;
+		}
+		supply.all = Object.values(supply).reduce((acc, s) => acc.add(s), new Prisma.Decimal(0));
+		res.send(supply);
 	});
 	// Listen on localhost.
 	app.listen(config.server.port, () => {
