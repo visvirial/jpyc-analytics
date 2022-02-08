@@ -4,9 +4,8 @@
   "description": "Analyze JPYC (A Stable Coin Pegged to Japanese Yen) on Blockchains",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node ./index.ts",
-    "server": "ts-node ./server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "sync": "ts-node ./sync.ts",
+    "server": "ts-node ./server.ts"
   },
   "author": "Vis Virial <visvirial@gmail.com>",
   "license": "MIT",

@@ -82,3 +82,12 @@ export const syncWithInterval = async (prisma: PrismaClient, interval: number) =
 	setTimeout(() => { syncWithInterval(prisma, interval); }, interval);
 }
 
+export const main = async () => {
+	// Establish a database connection.
+	const prisma = new PrismaClient();
+	// Run syncer.
+	await syncWithInterval(prisma, config.syncInterval);
+};
+
+main();
+
