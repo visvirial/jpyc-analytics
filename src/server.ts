@@ -2,6 +2,7 @@
 import { ethers } from 'ethers';
 import { PrismaClient, Prisma } from '@prisma/client';
 import express from 'express';
+import morgan from 'morgan';
 
 import { valueToDecimalStr } from './util';
 import { config } from './config';
@@ -12,6 +13,7 @@ export const main = async () => {
 	// Initialize express server.
 	const app: express.Express = express();
 	app.use(express.json());
+	app.use(morgan('tiny'));
 	// Allow CORS accesses.
 	app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 		res.header("Access-Control-Allow-Origin", "*");
