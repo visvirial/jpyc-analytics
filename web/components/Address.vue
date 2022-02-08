@@ -10,13 +10,13 @@ import { Vue, Component, Prop } from 'nuxt-property-decorator';
 @Component
 export default class Address extends Vue {
 	@Prop({ type: String, required: true, })
-	chain: string!;
+	chain!: string;
 	@Prop({ type: String, required: true, })
-	value: string!;
+	value!: string;
 	@Prop({ type: Boolean, required: false, default: false, })
-	short: boolean!;
+	short!: boolean;
 	url() {
-		const urlPrefixes = {
+		const urlPrefixes: { [chain: string]: string } = {
 			eth    : 'https://etherscan.io/address/',
 			polygon: 'https://polygonscan.io/address/',
 			xdai   : 'https://blockscout.com/shiden/address/',

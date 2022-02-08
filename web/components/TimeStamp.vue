@@ -10,7 +10,7 @@ import { Vue, Component, Prop } from 'nuxt-property-decorator';
 @Component
 export default class TimeStamp extends Vue {
 	@Prop({ type: Number, required: true, })
-	value: number!;
+	value!: number;
 }
 </script>
 

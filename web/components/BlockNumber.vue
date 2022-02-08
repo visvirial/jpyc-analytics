@@ -14,9 +14,9 @@ import { Vue, Component, Prop } from 'nuxt-property-decorator';
 @Component
 export default class BlockNumber extends Vue {
 	@Prop({ type: String, required: true, })
-	chain: string!;
+	chain!: string;
 	@Prop({ type: Number, required: true, })
-	value: number!;
+	value!: number;
 }
 </script>
 

@@ -14,7 +14,7 @@ import { Vue, Component, Prop } from 'nuxt-property-decorator';
 @Component
 export default class ChainName extends Vue {
 	@Prop({ type: String, required: true, })
-	value: string!;
+	value!: string;
 }
 </script>
 
