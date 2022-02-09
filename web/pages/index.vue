@@ -2,6 +2,15 @@
 	<v-row justify="center" align="center">
 		<v-col cols="12">
 			
+			<v-parallax height="600" src="img/sauna.jpg">
+				<v-row align="center">
+					<v-col class="text-center">
+						<h1>JPYC Analytics</h1>
+						<p>JPYC is the most issued &amp; traded stable coin pegged to JPY</p>
+					</v-col>
+				</v-row>
+			</v-parallax>
+			
 			<h2>Top Holders</h2>
 			
 			<v-data-table :headers="holdersHeaders" :items="holders">
