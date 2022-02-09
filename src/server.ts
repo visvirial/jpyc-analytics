@@ -129,6 +129,7 @@ export const main = async () => {
 			holders: holders.slice(offset, offset + PER_PAGE),
 		});
 	});
+	// /supply
 	app.get('/supply', async (req: express.Request, res: express.Response) => {
 		const supply: { [chain: string]: Prisma.Decimal } = {};
 		for(const chain in config.chains) {
@@ -141,6 +142,7 @@ export const main = async () => {
 		supply.all = Object.values(supply).reduce((acc, s) => acc.add(s), new Prisma.Decimal(0));
 		res.send(supply);
 	});
+	// /addr
 	app.get('/addr/:chain/:addr', async (req: express.Request, res: express.Response) => {
 		const chain = req.params.chain;
 		const addr = req.params.addr;
@@ -181,6 +183,50 @@ export const main = async () => {
 		res.send({
 			balance,
 			txs,
+		});
+	});
+	// /stat
+	app.get('/stat', async (req: express.Request, res: express.Response) => {
+		const computeStat = async (range: number) => {
+			const stat = await prisma.transaction.groupBy({
+				by: ['chain'],
+				_sum: {
+					value: true,
+				},
+				_count: {
+					value: true,
+				},
+				where: {
+					timestamp: {
+						gte: Math.floor(Date.now() / 1000) - range,
+					},
+				},
+			});
+			const values: { [chain: string]: Prisma.Decimal } = {};
+			const count: { [chain: string]: number } = {};
+			stat.forEach((item) => {
+				values[item.chain] = (item._sum.value as Prisma.Decimal);
+			});
+			values.all = stat.reduce((acc, item) => item._sum.value!.add(acc), new Prisma.Decimal(0));
+			stat.forEach((item) => {
+				count[item.chain] = item._count.value;
+			});
+			count.all = stat.reduce((acc, item) => item._count.value + acc, 0);
+			return {
+				values,
+				count,
+			};
+		};
+		const stat24h = await computeStat(24 * 60 * 60);
+		const stat30d = await computeStat(30 * 24 * 60 * 60);
+		const stat356d = await computeStat(356 * 24 * 60 * 60);
+		res.send({
+			tranfer_values_24h: stat24h.values,
+			tranfer_count_24h: stat24h.count,
+			tranfer_values_30d: stat30d.values,
+			tranfer_count_30d: stat30d.count,
+			tranfer_values_356d: stat356d.values,
+			tranfer_count_356d: stat356d.count,
 		});
 	});
 	// Listen on localhost.
