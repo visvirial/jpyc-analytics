@@ -11,6 +11,24 @@
 				</v-row>
 			</v-parallax>
 			
+			<h2>Market Circulation Statistics</h2>
+			
+			<div class="text-center" style="font-size: 200%;">
+				<div>
+					<span style="font-size: 200%;">
+						<number :from="0" :to="stat.transfer_values_24h.all" :format="(n) => Math.floor(n).toLocaleString()"></number>
+						<span style="font-size: 80%;">JPYC</span>
+					</span>
+					transfered in 24h.
+				</div>
+				<div>
+					<span style="font-size: 200%;">
+						<number :from="0" :to="stat.transfer_count_24h.all" :format="(n) => Math.floor(n).toLocaleString()"></number>
+					</span>
+					transactions submited in 24h.
+				</div>
+			</div>
+			
 			<h2>Top Holders</h2>
 			
 			<v-data-table :headers="holdersHeaders" :items="holders">
@@ -57,10 +75,23 @@
 </template>
 
 <script>
+import Vue from 'vue';
+import VueNumber from 'vue-number-animation';
+
+Vue.use(VueNumber);
+
 export default {
 	name: 'IndexPage',
 	data() {
 		return {
+			stat: {
+				transfer_values_24h: {
+					all: 0,
+				},
+				transfer_count_24h: {
+					all: 0,
+				},
+			},
 			holdersHeaders: [
 				{
 					text: 'Blockchain',
@@ -112,6 +143,7 @@ export default {
 		};
 	},
 	async mounted() {
+		(async () => { this.stat = (await this.$axios.$get('http://localhost:10484/stat')); })();
 		(async () => { this.holders = (await this.$axios.$get('http://localhost:10484/holders')).holders; })();
 		(async () => { this.txs = (await this.$axios.$get('http://localhost:10484/txs')).txs; })();
 	},
