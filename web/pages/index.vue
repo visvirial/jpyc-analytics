@@ -16,14 +16,14 @@
 			<div class="text-center" style="font-size: 200%;">
 				<div>
 					<span style="font-size: 200%;">
-						<number :from="0" :to="total_transfers.value" :format="(n) => Math.floor(n).toLocaleString()"></number>
+						<AnimatedNumber :value="Number.parseFloat(total_transfers.value)"></AnimatedNumber>
 						<span style="font-size: 80%;">JPYC</span>
 					</span>
 					transfered in 24h.
 				</div>
 				<div>
 					<span style="font-size: 200%;">
-						<number :from="0" :to="total_transfers.count" :format="(n) => Math.floor(n).toLocaleString()"></number>
+						<AnimatedNumber :value="total_transfers.count"></AnimatedNumber>
 					</span>
 					transactions submited in 24h.
 				</div>
@@ -74,75 +74,70 @@
 	</v-row>
 </template>
 
-<script>
-import Vue from 'vue';
-import VueNumber from 'vue-number-animation';
+<script lang="ts">
+import { Vue, Component, Prop } from 'nuxt-property-decorator';
 
-Vue.use(VueNumber);
-
-export default {
+@Component({
 	name: 'IndexPage',
-	data() {
-		return {
-			total_transfers: {
-				value: 0,
-				count: 0,
-			},
-			holdersHeaders: [
-				{
-					text: 'Blockchain',
-					value: 'chain',
-				},
-				{
-					text: 'Address',
-					value: 'address',
-				},
-				{
-					text: 'Amount',
-					value: 'value',
-					align: 'right',
-				},
-			],
-			holders: [],
-			txsHeaders: [
-				{
-					text: 'Blockchain',
-					value: 'chain',
-				},
-				{
-					text: 'Block Number',
-					value: 'height',
-				},
-				{
-					text: 'Timestamp',
-					value: 'timestamp',
-				},
-				{
-					text: 'Transaction Hash',
-					value: 'txhash',
-				},
-				{
-					text: 'From',
-					value: 'from',
-				},
-				{
-					text: 'To',
-					value: 'to',
-				},
-				{
-					text: 'Amount Transacted',
-					value: 'value',
-					align: 'right',
-				},
-			],
-			txs: [],
-		};
-	},
+})
+export default class Index extends Vue {
+	total_transfers = {
+		value: 0,
+		count: 0,
+	};
+	holdersHeaders = [
+		{
+			text: 'Blockchain',
+			value: 'chain',
+		},
+		{
+			text: 'Address',
+			value: 'address',
+		},
+		{
+			text: 'Amount',
+			value: 'value',
+			align: 'right',
+		},
+	];
+	holders = [];
+	txsHeaders = [
+		{
+			text: 'Blockchain',
+			value: 'chain',
+		},
+		{
+			text: 'Block Number',
+			value: 'height',
+		},
+		{
+			text: 'Timestamp',
+			value: 'timestamp',
+		},
+		{
+			text: 'Transaction Hash',
+			value: 'txhash',
+		},
+		{
+			text: 'From',
+			value: 'from',
+		},
+		{
+			text: 'To',
+			value: 'to',
+		},
+		{
+			text: 'Amount Transacted',
+			value: 'value',
+			align: 'right',
+		},
+	];
+	txs = [];
 	async mounted() {
 		const now = Math.floor(Date.now() / 1000);
 		(async () => { this.total_transfers = (await this.$axios.$get(`http://localhost:10484/total_transfers?after=${now - 24 * 60 * 60}`)); })();
 		(async () => { this.holders = (await this.$axios.$get('http://localhost:10484/holders')).holders; })();
 		(async () => { this.txs = (await this.$axios.$get('http://localhost:10484/txs')).txs; })();
-	},
+	}
 }
 </script>
