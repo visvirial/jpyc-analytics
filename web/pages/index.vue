@@ -2,7 +2,7 @@
 	<v-row justify="center" align="center">
 		<v-col cols="12">
 			
-			<v-parallax height="600" src="img/sauna.jpg">
+			<v-parallax height="600" :src="require('~/assets/img/sauna.jpg')">
 				<v-row align="center">
 					<v-col class="text-center">
 						<h1>JPYC Analytics</h1>
