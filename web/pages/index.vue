@@ -16,14 +16,14 @@
 			<div class="text-center" style="font-size: 200%;">
 				<div>
 					<span style="font-size: 200%;">
-						<number :from="0" :to="stat.transfer_values_24h.all" :format="(n) => Math.floor(n).toLocaleString()"></number>
+						<number :from="0" :to="total_transfers.value" :format="(n) => Math.floor(n).toLocaleString()"></number>
 						<span style="font-size: 80%;">JPYC</span>
 					</span>
 					transfered in 24h.
 				</div>
 				<div>
 					<span style="font-size: 200%;">
-						<number :from="0" :to="stat.transfer_count_24h.all" :format="(n) => Math.floor(n).toLocaleString()"></number>
+						<number :from="0" :to="total_transfers.count" :format="(n) => Math.floor(n).toLocaleString()"></number>
 					</span>
 					transactions submited in 24h.
 				</div>
@@ -84,13 +84,9 @@ export default {
 	name: 'IndexPage',
 	data() {
 		return {
-			stat: {
-				transfer_values_24h: {
-					all: 0,
-				},
-				transfer_count_24h: {
-					all: 0,
-				},
+			total_transfers: {
+				value: 0,
+				count: 0,
 			},
 			holdersHeaders: [
 				{
@@ -143,7 +139,8 @@ export default {
 		};
 	},
 	async mounted() {
-		(async () => { this.stat = (await this.$axios.$get('http://localhost:10484/stat')); })();
+		const now = Math.floor(Date.now() / 1000);
+		(async () => { this.total_transfers = (await this.$axios.$get(`http://localhost:10484/total_transfers?after=${now - 24 * 60 * 60}`)); })();
 		(async () => { this.holders = (await this.$axios.$get('http://localhost:10484/holders')).holders; })();
 		(async () => { this.txs = (await this.$axios.$get('http://localhost:10484/txs')).txs; })();
 	},

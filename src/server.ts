@@ -187,48 +187,39 @@ export const main = async () => {
 			txs,
 		});
 	});
-	// /stat
-	app.get('/stat', async (req: express.Request, res: express.Response) => {
-		const computeStat = async (range: number) => {
-			const stat = await prisma.transaction.groupBy({
-				by: ['chain'],
-				_sum: {
-					value: true,
-				},
-				_count: {
-					value: true,
-				},
-				where: {
-					timestamp: {
-						gte: Math.floor(Date.now() / 1000) - range,
-					},
-				},
-			});
-			const values: { [chain: string]: Prisma.Decimal } = {};
-			const count: { [chain: string]: number } = {};
-			stat.forEach((item) => {
-				values[item.chain] = (item._sum.value as Prisma.Decimal);
-			});
-			values.all = stat.reduce((acc, item) => item._sum.value!.add(acc), new Prisma.Decimal(0));
-			stat.forEach((item) => {
-				count[item.chain] = item._count.value;
-			});
-			count.all = stat.reduce((acc, item) => item._count.value + acc, 0);
-			return {
-				values,
-				count,
-			};
+	// /total_transfers
+	app.get('/total_transfers', async (req: express.Request, res: express.Response) => {
+		const chainsRaw = ((req.query.chains as string) || 'all');
+		const chains = (chainsRaw === 'all' ? Object.keys(config.chains) : chainsRaw.split(','));
+		const before = Number.parseInt((req.query.before as string) || Number.MAX_SAFE_INTEGER.toString());
+		const after = Number.parseInt((req.query.after as string) || '0');
+		const valueMin = Number.parseFloat((req.query.valueMin as string) || '0');
+		const valueMax = Number.parseFloat((req.query.valueMax as string) || Number.MAX_VALUE.toString());
+		const where = {
+			chain: {
+				in: chains
+			},
+			timestamp: {
+				gte: after,
+				lte: before,
+			},
+			value: {
+				gte: valueMin,
+				lte: valueMax,
+			},
 		};
-		const stat24h = await computeStat(24 * 60 * 60);
-		const stat30d = await computeStat(30 * 24 * 60 * 60);
-		const stat365d = await computeStat(365 * 24 * 60 * 60);
+		const result = await prisma.transaction.aggregate({
+			_sum: {
+				value: true,
+			},
+			_count: {
+				id: true,
+			},
+			where,
+		});
 		res.send({
-			transfer_values_24h: stat24h.values,
-			transfer_count_24h: stat24h.count,
-			transfer_values_30d: stat30d.values,
-			transfer_count_30d: stat30d.count,
-			transfer_values_365d: stat365d.values,
-			transfer_count_365d: stat365d.count,
+			count: result._count.id,
+			value: result._sum.value,
 		});
 	});
 	// Listen on localhost.
