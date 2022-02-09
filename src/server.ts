@@ -9,7 +9,9 @@ import { config } from './config';
 
 export const main = async () => {
 	// Establish a database connection.
-	const prisma = new PrismaClient();
+	const prisma = new PrismaClient({
+		//log: ['query'],
+	});
 	// Initialize express server.
 	const app: express.Express = express();
 	app.use(express.json());
@@ -219,14 +221,14 @@ export const main = async () => {
 		};
 		const stat24h = await computeStat(24 * 60 * 60);
 		const stat30d = await computeStat(30 * 24 * 60 * 60);
-		const stat356d = await computeStat(356 * 24 * 60 * 60);
+		const stat365d = await computeStat(365 * 24 * 60 * 60);
 		res.send({
 			transfer_values_24h: stat24h.values,
 			transfer_count_24h: stat24h.count,
 			transfer_values_30d: stat30d.values,
 			transfer_count_30d: stat30d.count,
-			transfer_values_356d: stat356d.values,
-			transfer_count_356d: stat356d.count,
+			transfer_values_365d: stat365d.values,
+			transfer_count_365d: stat365d.count,
 		});
 	});
 	// Listen on localhost.
