@@ -221,12 +221,12 @@ export const main = async () => {
 		const stat30d = await computeStat(30 * 24 * 60 * 60);
 		const stat356d = await computeStat(356 * 24 * 60 * 60);
 		res.send({
-			tranfer_values_24h: stat24h.values,
-			tranfer_count_24h: stat24h.count,
-			tranfer_values_30d: stat30d.values,
-			tranfer_count_30d: stat30d.count,
-			tranfer_values_356d: stat356d.values,
-			tranfer_count_356d: stat356d.count,
+			transfer_values_24h: stat24h.values,
+			transfer_count_24h: stat24h.count,
+			transfer_values_30d: stat30d.values,
+			transfer_count_30d: stat30d.count,
+			transfer_values_356d: stat356d.values,
+			transfer_count_356d: stat356d.count,
 		});
 	});
 	// Listen on localhost.
