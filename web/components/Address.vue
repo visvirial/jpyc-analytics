@@ -1,6 +1,6 @@
 <template>
 	<span>
-		<a :href="this.url()">{{ short ? `${value.slice(0, 6)}..${value.slice(-4)}` : value }}</a>
+		<NuxtLink :to="`/addr/${chain}/${value}`">{{ short ? `${value.slice(0, 6)}..${value.slice(-4)}` : value }}</NuxtLink>
 	</span>
 </template>
 
@@ -15,19 +15,6 @@ export default class Address extends Vue {
 	value!: string;
 	@Prop({ type: Boolean, required: false, default: false, })
 	short!: boolean;
-	url() {
-		const urlPrefixes: { [chain: string]: string } = {
-			eth    : 'https://etherscan.io/address/',
-			polygon: 'https://polygonscan.io/address/',
-			xdai   : 'https://blockscout.com/shiden/address/',
-			shiden : 'https://shiden.subscan.io/account/',
-		};
-		if(urlPrefixes[this.chain]) {
-			return (urlPrefixes[this.chain] + this.value);
-		} else {
-			return null;
-		}
-	}
 }
 </script>
 
