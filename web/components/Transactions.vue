@@ -30,7 +30,15 @@ import { Vue, Component, Prop } from 'nuxt-property-decorator';
 @Component
 export default class Transactions extends Vue {
 	@Prop({ type: Array, required: true, })
-	value!;
+	value!: {
+		chain: string,
+		height: number,
+		timestamp: number,
+		txhash: string,
+		from: string,
+		to: string,
+		value: string,
+	}[];
 	txsHeaders = [
 		{
 			text: 'Blockchain',
