@@ -73,8 +73,8 @@ export const main = async () => {
 	});
 	// /holders
 	app.get('/holders', async (req: express.Request, res: express.Response) => {
-		const PER_PAGE = 100;
 		const offset = Number.parseInt((req.query.offset as string) || '0');
+		const limit = Number.parseInt((req.query.limit as string) || '100');
 		const chainsRaw = ((req.query.chains as string) || 'all');
 		const chains = (chainsRaw === 'all' ? Object.keys(config.chains) : chainsRaw.split(','));
 		const before = Number.parseInt((req.query.before as string) || Number.MAX_SAFE_INTEGER.toString());
@@ -117,6 +117,7 @@ export const main = async () => {
 			const value = holdersObj[chainAndAddress];
 			const [chain, address] = chainAndAddress.split('_');
 			holders.push({
+				rank: -1,
 				chain,
 				address,
 				value,
@@ -126,9 +127,11 @@ export const main = async () => {
 		holders = holders.filter((holder) => holder.value.isPositive() && !holder.value.isZero());
 		// Sort.
 		holders.sort((a, b) => b.value.cmp(a.value));
+		// Add rank info.
+		holders.forEach((holder, i) => holder.rank = i+1);
 		res.send({
 			count: holders.length,
-			holders: holders.slice(offset, offset + PER_PAGE),
+			holders: holders.slice(offset, offset + limit),
 		});
 	});
 	// /supply
