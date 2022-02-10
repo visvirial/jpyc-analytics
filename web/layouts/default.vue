@@ -3,6 +3,11 @@
 		<v-app-bar app>
 			<v-img src="/favicon.png" alt="favicon" max-height="40" max-width="40" contain style="margin-right:15px;" /></v-img>
 			<v-app-bar-title><NuxtLink to="/" style="color:inherit;">JPYC Analytics</NuxtLink></v-app-bar-title>
+			<div style="margin-left: 20px;">
+				<NuxtLink to="/holders">
+					Holders Ranking
+				</NuxtLink>
+			</div>
 		</v-app-bar>
 		<v-main>
 			<v-container>
