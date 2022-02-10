@@ -1,4 +1,5 @@
 
+import { Mutex } from 'await-semaphore';
 import { ethers } from 'ethers';
 import { PrismaClient, Prisma } from '@prisma/client';
 import express from 'express';
@@ -72,6 +73,7 @@ export const main = async () => {
 		});
 	});
 	// /holders
+	const holdersMutex = new Mutex();
 	const holdersCache = {
 		lastUpdate: 0,
 		holders: ([] as {
@@ -138,7 +140,9 @@ export const main = async () => {
 				return holders;
 			}
 		};
+		const release = await holdersMutex.acquire();
 		let holders = await getHolders();
+		release();
 		// Extract records on desired chains.
 		holders = holders.filter((holder) => chains.indexOf(holder.chain) >= 0);
 		// Sort.
