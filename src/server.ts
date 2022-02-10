@@ -77,22 +77,12 @@ export const main = async () => {
 		const limit = Number.parseInt((req.query.limit as string) || '100');
 		const chainsRaw = ((req.query.chains as string) || 'all');
 		const chains = (chainsRaw === 'all' ? Object.keys(config.chains) : chainsRaw.split(','));
-		const before = Number.parseInt((req.query.before as string) || Number.MAX_SAFE_INTEGER.toString());
-		const where = {
-			chain: {
-				in: chains
-			},
-			timestamp: {
-				lte: before,
-			},
-		};
 		// Compute incoming values.
 		const ins = await prisma.transaction.groupBy({
 			by: ['chain', 'to'],
 			_sum: {
 				value: true,
 			},
-			where,
 		});
 		// Compute outgoing values.
 		const outs = await prisma.transaction.groupBy({
@@ -100,7 +90,6 @@ export const main = async () => {
 			_sum: {
 				value: true,
 			},
-			where,
 		});
 		// Concatinate `ins` and `outs`.
 		const holdersObj: { [address: string]: Prisma.Decimal } = {};
@@ -125,6 +114,8 @@ export const main = async () => {
 		}
 		// Discard zero balances.
 		holders = holders.filter((holder) => holder.value.isPositive() && !holder.value.isZero());
+		// Extract records on desired chains.
+		holders = holders.filter((holder) => chains.indexOf(holder.chain) >= 0);
 		// Sort.
 		holders.sort((a, b) => b.value.cmp(a.value));
 		// Add rank info.
