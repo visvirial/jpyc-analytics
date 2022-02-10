@@ -45,30 +45,7 @@
 			
 			<h2>Recent Transactions</h2>
 			
-			<v-data-table :headers="txsHeaders" :items="txs">
-				<template v-slot:item.chain="{ item }">
-					<ChainName :value="item.chain" />
-				</template>
-				<template v-slot:item.height="{ item }">
-					<BlockNumber :chain="item.chain" :value="item.height" />
-				</template>
-				<template v-slot:item.timestamp="{ item }">
-					<TimeStamp :value="item.timestamp" />
-				</template>
-				<template v-slot:item.txhash="{ item }">
-					<TxHash :chain="item.chain" :value="item.txhash" short />
-				</template>
-				<template v-slot:item.from="{ item }">
-					<Address :chain="item.chain" :value="item.from" short />
-				</template>
-				<template v-slot:item.to="{ item }">
-					<Address :chain="item.chain" :value="item.to" short />
-				</template>
-				<template v-slot:item.value="{ item }">
-					<Amount :value="Number.parseFloat(item.value)" />
-				</template>
-			</v-data-table>
-			
+			<Transactions :value="txs" />
 			
 		</v-col>
 	</v-row>
@@ -101,43 +78,12 @@ export default class Index extends Vue {
 		},
 	];
 	holders = [];
-	txsHeaders = [
-		{
-			text: 'Blockchain',
-			value: 'chain',
-		},
-		{
-			text: 'Block Number',
-			value: 'height',
-		},
-		{
-			text: 'Timestamp',
-			value: 'timestamp',
-		},
-		{
-			text: 'Transaction Hash',
-			value: 'txhash',
-		},
-		{
-			text: 'From',
-			value: 'from',
-		},
-		{
-			text: 'To',
-			value: 'to',
-		},
-		{
-			text: 'Amount Transacted',
-			value: 'value',
-			align: 'right',
-		},
-	];
 	txs = [];
 	async mounted() {
 		const now = Math.floor(Date.now() / 1000);
-		(async () => { this.total_transfers = (await this.$axios.$get(`http://localhost:10484/total_transfers?after=${now - 24 * 60 * 60}`)); })();
-		(async () => { this.holders = (await this.$axios.$get('http://localhost:10484/holders')).holders; })();
-		(async () => { this.txs = (await this.$axios.$get('http://localhost:10484/txs')).txs; })();
+		(async () => { this.total_transfers = (await this.$axios.$get(`total_transfers?after=${now - 24 * 60 * 60}`)); })();
+		(async () => { this.holders = (await this.$axios.$get('holders')).holders; })();
+		(async () => { this.txs = (await this.$axios.$get('txs')).txs; })();
 	}
 }
 </script>
