@@ -29,20 +29,6 @@
 				</div>
 			</div>
 			
-			<h2>Top Holders</h2>
-			
-			<v-data-table :headers="holdersHeaders" :items="holders">
-				<template v-slot:item.chain="{ item }">
-					<ChainName :value="item.chain" />
-				</template>
-				<template v-slot:item.address="{ item }">
-					<Address :chain="item.chain" :value="item.address" />
-				</template>
-				<template v-slot:item.value="{ item }">
-					<Amount :value="Number.parseFloat(item.value)" />
-				</template>
-			</v-data-table>
-			
 			<h2>Recent Transactions</h2>
 			
 			<Transactions :value="txs" />
@@ -62,27 +48,10 @@ export default class Index extends Vue {
 		value: 0,
 		count: 0,
 	};
-	holdersHeaders = [
-		{
-			text: 'Blockchain',
-			value: 'chain',
-		},
-		{
-			text: 'Address',
-			value: 'address',
-		},
-		{
-			text: 'Amount',
-			value: 'value',
-			align: 'right',
-		},
-	];
-	holders = [];
 	txs = [];
 	async mounted() {
 		const now = Math.floor(Date.now() / 1000);
 		(async () => { this.total_transfers = (await this.$axios.$get(`total_transfers?after=${now - 24 * 60 * 60}`)); })();
-		(async () => { this.holders = (await this.$axios.$get('holders')).holders; })();
 		(async () => { this.txs = (await this.$axios.$get('txs')).txs; })();
 	}
 }
